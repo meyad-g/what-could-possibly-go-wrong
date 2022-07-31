@@ -16,7 +16,9 @@ The benefit for customers is not only avoiding lengthy form applications and cal
 
 A future avenue we want to implement will allow customers to hold a wallet of personal data NFTs through moonbeam, leveraging their integration with OceanOnda V4 to allow customers to truly become the masters of sharing, licensing, and owning their own data.
 
+## Demo
 
+[![Watch the video](https://teamwhatcould-hbe5742.slack.com/files/U03R6JA471V/F03RA2JA0LX/screenshot_2022-07-31_at_15.26.31.png)](ttps://teamwhatcould-hbe5742.slack.com/files/U03R6JA471V/F03RQGW2Y11/wcpgw_demo.mp4)
 
 ## Tech Specs
 
