@@ -1,0 +1,127 @@
+# Relaychain Configuration
+relaychain:
+  image: parity/polkadot:v0.9.26 # the docker image to use
+  chain: rococo-local # the chain to use
+  runtimeGenesisConfig: # additonal genesis override
+    configuration:
+      config:
+        validation_upgrade_cooldown: 10
+        validation_upgrade_delay: 10
+        hrmp:
+         preopenHrmpChannels:
+           - sender: 2000
+             recipient: 2001
+             maxCapacity: 8
+             maxMessageSize: 102400
+           - sender: 2001
+             recipient: 2000
+             maxCapacity: 8
+             maxMessageSize: 102400
+           - sender: 2000
+             recipient: 2002
+             maxCapacity: 8
+             maxMessageSize: 102400
+           - sender: 2002
+             recipient: 2001
+             maxCapacity: 8
+             maxMessageSize: 102400
+  env:
+    RUST_LOG: parachain::candidate-backing=trace,parachain::candidate-selection=trace,parachain::pvf=debug,parachain::provisioner=trace
+  flags: # additional CLI flags for all relaychain nodes
+    - --rpc-methods=unsafe
+    - --wasm-execution=compiled
+    - --execution=wasm
+  nodes: # nodes config
+    - name: alice # the node name and session key, this imply `--alice`
+      wsPort: 9944 # default ws port number is `9944 + global_node_index`
+      rpcPort: 9933 # default rpc port number is `9933 + global_node_index`
+      port: 30333 # default libp2p port number is `30333 + global_node_index`
+    - name: bob
+    - name: charlie
+    - name: dave
+    - name: eve
+    - name: ferdie
+
+# Parachain Configuration
+parachains:
+  # Config for insurance parachain
+  - image: acala/acala-node:2.5.0
+    chain:
+      base: acala-dev
+      collators: # override collators
+        - alice
+      sudo: alice
+    id: 2000 # override parachain id
+    parachain: true # this is parachain, not parathread
+    flags: # CLI flags for this parachain nodes
+      - --rpc-methods=unsafe
+      - --force-authoring
+      - --execution=wasm
+    relaychainFlags: # CLI flags for the relaychain port
+      - --execution=wasm
+    env: # environment variables for this parachain nodes
+      RUST_LOG: sc_basic_authorship=trace
+
+
+    volumePath: /acala/data # The path to mount volume and base path, default to /data
+    nodes: # nodes config
+      - flags: # additional CLI flags for this node
+          - --alice
+        relaychainFlags: # additional CLI flags for relaychain part
+          - --name=relaychain-alice
+        env:
+          RUST_LOG: aura=debug # environment varitables for this node
+
+
+  # Config for customer parachain
+  - image: acala/acala-node:2.5.0
+    chain:
+      base: acala-dev
+      collators: # override collators
+        - bob
+    id: 2001 # override parachain id
+    parachain: true # this is parachain, not parathread
+    flags: # CLI flags for this parachain nodes
+      - --rpc-methods=unsafe
+      - --force-authoring
+      - --execution=wasm
+    relaychainFlags: # CLI flags for the relaychain port
+      - --execution=wasm
+    env: # environment variables for this parachain nodes
+      RUST_LOG: sc_basic_authorship=trace
+    volumePath: /acala/data # The path to mount volume and base path, default to /data
+    nodes: # nodes config
+      - flags: # additional CLI flags for this node
+          - --bob
+        relaychainFlags: # additional CLI flags for relaychain part
+          - --name=relaychain-bob
+        env:
+          RUST_LOG: aura=debug # environment varitables for this node
+
+
+  # Config for dataProvider parachain
+  - image: acala/acala-node:2.5.0
+    chain:
+      base: acala-dev
+      collators: # override collators
+        - dave
+
+    id: 2002 # override parachain id
+    parachain: true # this is parachain, not parathread
+    flags: # CLI flags for this parachain nodes
+      - --rpc-methods=unsafe
+      - --force-authoring
+      - --execution=wasm
+    relaychainFlags: # CLI flags for the relaychain port
+      - --execution=wasm
+    env: # environment variables for this parachain nodes
+      RUST_LOG: sc_basic_authorship=trace
+    volumePath: /acala/data # The path to mount volume and base path, default to /data
+    nodes: # nodes config
+      - flags: # additional CLI flags for this node
+          - --dave
+        relaychainFlags: # additional CLI flags for relaychain part
+          - --name=relaychain-dave
+        env:
+          RUST_LOG: aura=debug # environment varitables for this node
+
