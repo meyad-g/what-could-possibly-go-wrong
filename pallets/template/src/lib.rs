@@ -47,6 +47,13 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
+		PingSent(ParaId, u32, Vec<u8>),
+		Pinged(ParaId, u32, Vec<u8>),
+		PongSent(ParaId, u32, Vec<u8>),
+		Ponged(ParaId, u32, Vec<u8>, T::BlockNumber),
+		ErrorSendingPing(XcmError, ParaId, u32, Vec<u8>),
+		ErrorSendingPong(XcmError, ParaId, u32, Vec<u8>),
+		UnknownPong(ParaId, u32, Vec<u8>),
 	}
 
 	// Errors inform users that something went wrong.
@@ -100,6 +107,80 @@ pub mod pallet {
 					<Something<T>>::put(new);
 					Ok(().into())
 				},
+			}
+		}
+	}
+
+	//
+	#[pallet::call]
+	impl<T: Config> Pallet<T> {
+		#[pallet::weight(0)]
+		pub fn start(origin: OriginFor<T>, para: ParaId, payload: Vec<u8>) -> DispatchResult {
+			ensure_root(origin)?;
+			Targets::<T>::mutate(|t| t.push((para, payload)));
+			Ok(())
+		}
+
+		#[pallet::weight(0)]
+		pub fn ping(origin: OriginFor<T>, seq: u32, payload: Vec<u8>) -> DispatchResult {
+			// Only accept pings from other parachains on the same relaychain.
+			let para = ensure_sibling_para(<T as Config>::Origin::from(origin))?;
+
+			Self::deposit_event(Event::Pinged(para, seq, payload.clone()));
+			match T::XcmSender::send_xcm(
+				MultiLocation::X2(Junction::Parent, Junction::Parachain(para.into())),
+				Xcm::Transact {
+					origin_type: OriginKind::Native,
+					require_weight_at_most: 1_000,
+					call: <T as Config>::Call::from(Call::<T>::pong(seq, payload.clone())).encode().into(),
+				},
+			) {
+				Ok(()) => Self::deposit_event(Event::PongSent(para, seq, payload)),
+				Err(e) => Self::deposit_event(Event::ErrorSendingPong(e, para, seq, payload)),
+			}
+			Ok(())
+		}
+
+		// Acknowledges that the ping has been successfully received
+		#[pallet::weight(0)]
+		pub fn pong(origin: OriginFor<T>, seq: u32, payload: Vec<u8>) -> DispatchResult {
+			// Only accept pings from other parachains on the same relay chain.
+			let para = ensure_sibling_para(<T as Config>::Origin::from(origin))?;
+
+			if let Some(sent_at) = Pings::<T>::take(seq) {
+				Self::deposit_event(Event::Ponged(para, seq, payload, frame_system::Pallet::<T>::block_number().saturating_sub(sent_at)));
+			} else {
+				// Pong received from a ping we apparently didn't send.
+				Self::deposit_event(Event::UnknownPong(para, seq, payload));
+			}
+			Ok(())
+		}
+	}
+
+	// Pings the target parachain when the block is finalized (after successfully receiving a message).
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_finalize(
+			n: T::BlockNumber,
+		) {
+			for (para, payload) in Targets::<T>::get().into_iter() {
+				let seq = PingCount::<T>::mutate(|seq| { *seq += 1; *seq });
+				match T::XcmSender::send_xcm(
+					MultiLocation::X2(Junction::Parent, Junction::Parachain(para.into())),
+					Xcm::Transact {
+						origin_type: OriginKind::Native,
+						require_weight_at_most: 1_000,
+						call: <T as Config>::Call::from(Call::<T>::ping(seq, payload.clone())).encode().into(),
+					},
+				) {
+					Ok(()) => {
+						Pings::<T>::insert(seq, n);
+						Self::deposit_event(Event::PingSent(para, seq, payload));
+					},
+					Err(e) => {
+						Self::deposit_event(Event::ErrorSendingPing(e, para, seq, payload));
+					}
+				}
 			}
 		}
 	}
