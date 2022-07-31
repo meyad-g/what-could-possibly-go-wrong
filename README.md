@@ -1,9 +1,45 @@
 # What Could Possibly Go Wrong?
 
-Meyad Golmakani
-Sam Brownstain
-Lucas Curtin
-Jad Sbai
+**Members:**
+
+- Meyad Golmakani
+- Sam Brownstain
+- Lucas Curtin
+- Jad Sbai
+
+## Concept:
+
+This project aims to take out the tedious admin for customers when applying for car insurance. By facilitating private and authorised communication between insurers, customers, and data providers (e.g. local government, medical profile, bank, university, credit agencies, car manufacturer). Using an assortment of verified and credible data points, insurers can quickly and easily offer customers an informed and fair premium. 
+The main appeal to insurance companies is ensuring the data they receive is verified (i.e. not falsified or misleading) and the acquisition of said data is streamlined. This allows them to significantly cut costs; not only can they significantly reduce administrative costs due to outdated and tedious processes, but they save a boatload of money on fraud avoidance: US auto insurers are estimated to have lost $29b in 2017 to misleading information on signup (Verisk).
+
+The benefit for customers is not only avoiding lengthy form applications and calls, but also keeping insurance premiums on good drivers low (thereby encouraging responsible driving). This project has wide applications to other forms of insurance such as health, life, house and travel. This technology can also be leveraged to help customers authorise the transfer of their data to any data-reliant business, e.g. credit reference agencies and banks could offer more reasonable rates for personal loans and mortgages, which could help young people acquire first homes during the housing crisis.
+
+A future avenue we want to implement will allow customers to hold a wallet of personal data NFTs through moonbeam, leveraging their integration with OceanOnda V4 to allow customers to truly become the masters of sharing, licensing, and owning their own data.
 
 
-This project aims to take out the tedious admin for customers when applying for car insurance by having a full relevant profile on the parachain that the insurance companies can be allowed to access. By allowing the car insurance companies to access their data from multiple sources (local government, medical profile, bank, university, credit agencies, car manufacturer) they can quickly offer an informed and fair premium. Parking history, travel times and travel locations can be accurately and reliably sourced from smart car data companies such as Tesla that the customer has a right to. The main appeal to insurance companies is ensuring the data they receive is through a verified and streamlined process. This allows them to employ less people in customer care in call centres allowing them to provide more accurate premiums at cheaper prices than traditional competition. The benefit for customers is avoiding lengthy form applications and calls but also letting good drivers keep their insurance low. For example, if an elderly driver still maintains good eyesight and reaction times as reflected in their medical profile - they can avoid the hike up that is often seen for older drivers in the current insurance industry. This will all be achieved by building a chain for the open communication of the customer’s messages but not with a permanent slot. Instead a parathread will be used to bid for temporary slots to send the customer’s messages. This will be funded by a treasury pool of DOT, largely paid for by the insurance company who will see a large increase in profits due to the complete data profile available but also partially by the customer. This project has wide applications to other forms of insurance such as health, life, house, travel and phone. This can also improve how credit scores are calculated allowing customers to receive more reasonable loan rates for example their first home. Another avenue is for customers to have their data also sent to their own wallets in Moonbeam with the use of OceanOnda V4 integration. This will allow them to have complete control of their own data, even being able to issue tokens to license their data in the future under their control.
+
+## Tech Specs
+
+### Tech Description
+
+Our tech stack consists of Substrate, Acala, Docker, Rust, and Polkadot. Substrate, Acala, and Rust were used to create the main parachains and the relay chain of our project on a local Polkadot Testnet. Docker was used to compile and run the nodes/chains  in containers on our machines. The main features of Polkadot that made this project uniquely possible were parachaining and parathreading. We used parachains as communicators for insurance companies and ‘data providers’, while we used parathreading to allow everyday customers to access the Polkadot network, on a need-only/block by block basis, and communicate with any entity to which they might need to pass data. For the purposes of our demo, we used a parachain acting as the customer parathread, but the proper utilisation of parathreading is atop our list of priorities to implement.
+
+In the future, we plan to use the OceanOnda V4 integration with Moonbeam to allow our customers to mint ERC721 data NFTs with the personal information that they acquire from assorted data providers through Polkadot. This is proof of their copyright ownership/base IP. Subsequently, customers will be able to issue ERC20 datatoken contracts in order to license their own data (on whatever terms they specify in each licensing agreement) to any enterprise or entity they desire. Over time, this will allow customers to truly become the masters of their own data, rather than feeling like their data is owned and abused by big tech.
+
+
+### Tech Stack
+
+- Substrate
+- Rust
+- Docker
+- Acala 
+- Polkadot
+
+
+### Significant source code dependencies:
+
+- Cumulus: *https://github.com/paritytech/cumulus/tree/polkadot-v0.9.8*
+- Substrate-node-template: *https://github.com/substrate-developer-hub/substrate-node-template*
+- parachain-launch: *https://www.npmjs.com/package/@open-web3/parachain-launch*
+
+
